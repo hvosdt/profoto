@@ -1,0 +1,11 @@
+aiogram
+asyncio
+peewee
+requests
+celery
+redis
+tqdm
+postgres
+python-dateutil
+datetime
+paramiko
