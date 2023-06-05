@@ -1,0 +1,6 @@
+/__pycache__
+/venv
+/ovpn
+config.py
+vpn_bot.db
+celerybeat-schedule.db
