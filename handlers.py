@@ -47,7 +47,7 @@ def send_msg(chat_id, text):
         chat_id = chat_id,
         text = text
     ))
-
+    
 def send_document(chat_id, doc):
     '''
     response = requests.post('https://api.telegram.org/bot{token}/sendDocument?chat_id={chat_id}&document={doc}'.format(
@@ -83,6 +83,8 @@ def create_vpn(data):
             send_msg(user_id, 'Ваша подписка продлена!')
             return 100
     if is_new:
+        msg_instruction = 'Инструкция по использованию:\n\n1. Скачай приложение\n\nДля Айфона:\nhttps://apps.apple.com/ru/app/openvpn-connect-openvpn-app/id590379981\n\nДля Андроида:\nhttps://play.google.com/store/apps/details?id=net.openvpn.openvpn\n'
+        send_msg(user_id, msg_instruction)
         data = {'expire_in': date.today() + timedelta(30),
                 'is_active': True,
                 'is_freemium': False
@@ -94,16 +96,19 @@ def create_vpn(data):
             name = user_id
             sftp.get('{name}.ovpn'.format(name=name), '{name}.ovpn'.format(name=name))
         doc = open('{name}.ovpn'.format(name=name), 'rb')
-        send_msg(user_id, 'Вот файл конфигурации.')
-        #asyncio.run(bot.send_document(user_id, doc))
-        
         send_document(user_id, doc)
+        msg = '2.Открой файл {name}.ovpn в приложении OpenVPN Connect и нажми ADD.\n\nx3. Включи VPN и радуйся жизни!'.format(
+            name=user_id
+        )
+        send_msg(user_id, msg)
         return 200
         
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.message):
-    await message.answer('Привет, я очень рада, что ты заинтересовалась марафоном.\nЕго цель - научиться делать красивые, трендовые селфи и повысить уверенность в себе.\nС помощью команды /buy можно оплатить. После чего тебе придет приглашение в закрытую группу.')
+    await message.answer('Привет {name}!\nЗдесь ты можешь приобрести подписку на VPN\n/buy_vpn\n\nИли записаться на сдледующий марафон “Больше чем селфи 2.0”\n/buy_maraphone'.format(
+        name=message.from_user.first_name
+    ))
 
 @dp.message_handler(commands=['check'])
 async def start(message: types.message):
@@ -122,7 +127,7 @@ async def start(message: types.message):
 async def buy(message: types.Message):
     await bot.send_invoice(
         message.chat.id,
-        title = 'Марафон "Больше чем селфи"',
+        title = 'Марафон "Больше чем селфи 2.0"',
         description = 'Двухнедельный марафон по фото и видео съемке себя',
         provider_token = config.PAYMENTS_TOKEN,
         currency = 'rub',
@@ -139,8 +144,8 @@ async def buy(message: types.Message):
 async def buy(message: types.Message):
     await bot.send_invoice(
         message.chat.id,
-        title = 'Подписка на VPN"',
-        description = 'Месячная подписка на сервис VPN',
+        title = 'Подписка на VPN',
+        description = 'на 1 месяц',
         provider_token = config.PAYMENTS_TOKEN,
         currency = 'rub',
         #photo_url="https://milalink.ru/uploads/posts/2018-02/1518206226_selfi-zhizn-napokaz.jpg",
@@ -174,4 +179,4 @@ async def successful_payment(message: types.Message):
 
     if payment_info['invoice_payload'] == 'maraphone-invoice-payload':
         await bot.send_message(message.chat.id,
-                           f"Платеж на сумму {message.successful_payment.total_amount // 100} {message.successful_payment.currency} прошел успешно!!!\nСсылка на группу https://t.me/+guIpIMyeACI1ZWMy")
+                           f"Платеж на сумму {message.successful_payment.total_amount // 100} {message.successful_payment.currency} прошел успешно!!!\nСсылка на группу https://t.me/+1vSqZKna4RVjNWMy")
