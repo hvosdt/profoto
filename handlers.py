@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher, types
 from aiogram.types.message import ContentType
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from prices import MARAPHON, VPN
@@ -106,12 +107,13 @@ def create_vpn(data):
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.message):
-    await message.answer('Привет {name}!\nЗдесь ты можешь приобрести подписку на VPN\n/buy_vpn\n\nИли записаться на сдледующий марафон “Больше чем селфи 2.0”\n/buy_maraphone'.format(
+    await message.answer('Привет {name}!\nЗдесь ты можешь приобрести подписку на VPN\nИли записаться на сдледующий марафон “Больше чем селфи 2.0”\n'.format(
         name=message.from_user.first_name
-    ))
+    ), reply_markup=inline_kb1)
+    
 
 @dp.message_handler(commands=['check'])
-async def start(message: types.message):
+async def check(message: types.message):
     users = User.select()
     for user in users:
         
@@ -123,10 +125,33 @@ async def start(message: types.message):
             print('asd')
         #print(date.today())
 
-@dp.message_handler(commands=['buy_maraphone'])
-async def buy(message: types.Message):
+
+inline_btn_1 = InlineKeyboardButton('Купить марафон', callback_data='maraphone_btn')
+inline_btn_2 = InlineKeyboardButton('Купить VPN', callback_data='vpn_btn')
+inline_kb1 = InlineKeyboardMarkup().add(inline_btn_1, inline_btn_2)
+   
+# Указать поведение
+@dp.message_handler(commands=['action'])
+async def action(message: types.Message):
+    await message.answer('Что мне делать?', reply_markup=inline_kb1)
+    
+@dp.callback_query_handler(lambda c: c.data == 'action_likes_btn')
+async def process_callback_button1(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    user_id = callback_query.from_user.id
+    data = {'do_likes': True}
+    entry, is_new = User.get_or_create(
+            user_id = user_id
+        )
+    query = User.update(data).where(User.user_id==user_id)
+    query.execute()
+
+@dp.callback_query_handler(lambda c: c.data == 'maraphone_btn')
+async def process_callback_button1(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    user_id = callback_query.from_user.id
     await bot.send_invoice(
-        message.chat.id,
+        user_id,
         title = 'Марафон "Больше чем селфи 2.0"',
         description = 'Двухнедельный марафон по фото и видео съемке себя',
         provider_token = config.PAYMENTS_TOKEN,
@@ -140,10 +165,12 @@ async def buy(message: types.Message):
         start_parameter="marafon-subscription",
         payload="maraphone-invoice-payload")
 
-@dp.message_handler(commands=['buy_vpn'])
-async def buy(message: types.Message):
+@dp.callback_query_handler(lambda c: c.data == 'vpn_btn')
+async def process_callback_button1(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    user_id = callback_query.from_user.id
     await bot.send_invoice(
-        message.chat.id,
+        user_id,
         title = 'Подписка на VPN',
         description = 'на 1 месяц',
         provider_token = config.PAYMENTS_TOKEN,
