@@ -5,7 +5,17 @@ MARAPHON = types.LabeledPrice(
     amount = 590*100
 )
 
-VPN = types.LabeledPrice(
+VPN30 = types.LabeledPrice(
     label = 'Подписка на VPN (1 месяц)',
     amount = 200*100
+)
+
+VPN90 = types.LabeledPrice(
+    label = 'Подписка на VPN (3 месяц)',
+    amount = 540*100
+)
+
+VPN180 = types.LabeledPrice(
+    label = 'Подписка на VPN (6 месяц)',
+    amount = 960*100
 )

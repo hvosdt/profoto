@@ -4,3 +4,5 @@
 config.py
 vpn_bot.db
 celerybeat-schedule.db
+test_api.py
+update_db.py
